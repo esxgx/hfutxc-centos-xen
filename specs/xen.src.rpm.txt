@@ -1,0 +1,1 @@
+http://dev.centos.org/centos/6/xen-c6-RC1/Source/SPackages/xen-4.2.4-30.el6.centos.alt.src.rpm
