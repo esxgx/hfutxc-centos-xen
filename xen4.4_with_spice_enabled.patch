@@ -1,0 +1,70 @@
+--- xen.spec.orig	2015-01-08 00:07:42.000000000 +0800
++++ xen.spec	2015-03-03 10:04:46.439907341 +0800
+@@ -12,6 +12,8 @@
+ %define build_efi 0
+ %define with_sysv 1
+ %define with_systemd 0
++%define enable_spice 1
++%define disable_sdl 1
+ 
+ # Hypervisor ABI
+ %define hv_abi  4.4
+@@ -19,7 +21,7 @@
+ Summary: Xen is a virtual machine monitor
+ Name:    xen
+ Version: 4.4.1
+-Release: 5%{?dist}
++Release: 100%{?dist}
+ Group:   Development/Libraries
+ License: GPLv2+ and LGPLv2+ and BSD
+ URL:     http://xen.org/
+@@ -58,7 +60,10 @@
+ Patch2001: qemu-xen-b04df88-fix-persistent-unmap.patch
+ 
+ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+-BuildRequires: transfig libidn-devel zlib-devel texi2html SDL-devel curl-devel
++BuildRequires: transfig libidn-devel zlib-devel texi2html curl-devel
++%if !%disable_sdl
++BuildRequires: SDL-devel
++%endif
+ BuildRequires: libX11-devel python-devel ghostscript texlive-latex
+ BuildRequires: ncurses-devel gtk2-devel libaio-devel libtool
+ # for the docs
+@@ -111,6 +116,10 @@
+ BuildRequires: mingw64-binutils
+ %endif
+ 
++%if %enable_spice
++BuildRequires: spice-server-devel usbredir-devel >= 0.6
++%endif
++
+ %description
+ This package contains the XenD daemon and xm command line
+ tools, needed to manage virtual machines running under the
+@@ -232,6 +241,26 @@
+ 
+ pushd tools/qemu-xen
+ %patch2001 -p1
++
++
++pushd `pwd`
++cd ${RPM_BUILD_DIR}/%{name}-%{version}/tools/qemu-xen
++
++# prevent generating libcacard
++sed -i 's/--enable-xen/& --disable-smartcard-nss/' ../Makefile
++
++%if %enable_spice
++# enable spice with usb-redir support
++sed -i 's/--enable-xen/& --enable-spice --enable-usb-redir/' ../Makefile
++%endif
++
++%if %disable_sdl
++sed -i 's/--enable-xen/& --disable-sdl/' ../Makefile
++%endif
++
++popd
++
++
+ pushd
+ 
+ # stubdom sources
